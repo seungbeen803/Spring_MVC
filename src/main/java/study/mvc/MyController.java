@@ -193,4 +193,31 @@ public class MyController {
         response.getWriter().write(allWords);
     }
 
+    // 모든 어노테이션을 사용한 예제
+    // required가 true이면 반드시 보내줘야함
+    @GetMapping("/users/{username}/products/{productId}")
+    public void getProducts(
+            @PathVariable(value = "username", required = true) String username,
+            @PathVariable("productId") Integer productId,
+            @RequestParam(value = "show_comments", required = false, defaultValue =
+                    "true") Boolean showComments,
+            @RequestHeader("API-Token") String apiToken,
+            HttpServletResponse response) throws IOException {
+        System.out.println(username);
+        System.out.println(productId);
+        System.out.println(showComments);
+        System.out.println(apiToken);
+
+        // 발급해준 api 검증하기 위한 로직
+        // 예) secret
+        if(!apiToken.equals("secret")) {
+            response.setStatus(401);
+            response.getWriter().write("need valid api key");
+        } else {
+            response.setStatus(200);
+            response.getWriter().write("success");
+        }
+        // required가 true로 반드시 제공해야 하는 값을 전달하지 않으면 400에러 발생
+        // apiToken 값이 있지만
+    }
 }
