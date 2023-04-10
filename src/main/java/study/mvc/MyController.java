@@ -3,13 +3,16 @@ package study.mvc;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.HashMap;
 
@@ -131,5 +134,17 @@ public class MyController {
         response.getWriter().write(result.trim());
     }
 
+    @GetMapping("/dog-image")
+    public void dogImage(HttpServletResponse response) throws IOException {
+    // resources 폴더의 static 폴더에 이미지 있어야 함
+        File file = ResourceUtils.getFile("classpath:static/dog.jpg");
+    // 파일의 바이트 데이터 모두 읽어오기
+        byte[] bytes = Files.readAllBytes(file.toPath());
+        response.setStatus(200);
+    // 응답 메시지의 데이터가 JPEG 압축 이미지임을 설정
+        response.setHeader("Content-Type", "image/jpeg");
+    // 바이트 데이터 쓰기 (여기서는 텍스트 데이터를 전송하지 않기 떄문에 Writer 대신 OutputStream을 이용)
+        response.getOutputStream().write(bytes);
+    }
 
 }
