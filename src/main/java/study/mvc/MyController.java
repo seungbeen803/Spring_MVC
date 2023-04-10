@@ -107,4 +107,29 @@ public class MyController {
         response.setHeader("Content-Type", "application/json");
         response.getWriter().write("{ \"data\": \"Hello\" }");
     }
+
+    @GetMapping("/echo-repeat")
+    public void echoRepeat(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        response.setStatus(200);
+        response.setHeader("Content-Type", "text/plain");
+        // X-Repeat-Count에 적힌 숫자 정보 가져오고 없으면 1로 초기화
+        int loopCount = Integer.parseInt(request.getHeader("X-Repeat-Count") == null
+                ? "1" : request.getHeader("X-Repeat-Count"));
+        // 쿼리 스트링 정보 가져와서
+        String query = request.getQueryString();
+        // 쿼리 스트링 나누고
+        String[] querySplit = query.split("&");
+        String result = "";
+        // 각 쿼리 스트링 정보들을 X-Repeat-Count만큼 반복해서 보여주기
+        for(String s : querySplit) {
+            for(int i=0;i<loopCount;i++) {
+                String[] tmp = s.split("=");
+                result += tmp[0] + "," + tmp[1] + "\n";
+            }
+        }
+        response.getWriter().write(result.trim());
+    }
+
+
 }
