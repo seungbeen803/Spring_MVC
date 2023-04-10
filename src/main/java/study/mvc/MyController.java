@@ -4,17 +4,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.ResourceUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -111,6 +110,7 @@ public class MyController {
         response.getWriter().write("{ \"data\": \"Hello\" }");
     }
 
+//    커스텀 헤더 정보를 이용하여 응답 메시지 구성하도록 메서드 정의하기
     @GetMapping("/echo-repeat")
     public void echoRepeat(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
@@ -134,6 +134,8 @@ public class MyController {
         response.getWriter().write(result.trim());
     }
 
+    // 닌 파일을 처리하는 방법도 다양할 수 있으며 웹 브라우저가 응답 메시지의 ContentType
+    // 헤더에 따라 다른 방식으로 응답 처리를 진행할 수 있음
     @GetMapping("/dog-image")
     public void dogImage(HttpServletResponse response) throws IOException {
     // resources 폴더의 static 폴더에 이미지 있어야 함
@@ -145,6 +147,50 @@ public class MyController {
         response.setHeader("Content-Type", "image/jpeg");
     // 바이트 데이터 쓰기 (여기서는 텍스트 데이터를 전송하지 않기 떄문에 Writer 대신 OutputStream을 이용)
         response.getOutputStream().write(bytes);
+    }
+
+    // 그런데 이미지를 파일 다운로드 방식으로 처리하려면 다음과 같이 설정
+    @GetMapping("/dog-image-file")
+    public void dogImageFile(HttpServletResponse response) throws IOException {
+        File file = ResourceUtils.getFile("classpath:static/dog.jpg");
+        byte[] bytes = Files.readAllBytes(file.toPath());
+        response.setStatus(200);
+    // 임의의 바이너리 데이터임을 알려주는 MIME 타입 설정
+        response.setHeader("Content-Type", "application/octet-stream");
+    // Content-Length는 자동으로 파일 크기만큼 설정해주지만 여기서는 그냥 넣었음
+    // (Q) 만약 바이트 크기를 제대로 주지 않으면 어떻게 될까?)
+        response.setHeader("Content-Length", bytes.length + "");
+    // 다운로드 될 파일 이름 설정
+        String filename = "dog.jpg";
+        response.setHeader("Content-Disposition", "attachment; filename=" +
+                filename);
+        response.getOutputStream().write(bytes);
+    }
+
+
+    // Post요청
+    private ArrayList<String> wordList = new ArrayList<>();
+    // 위의 ArrayList에 단어를 추가하는 메서드
+    @PostMapping("/words")
+    public void addWord(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        String bodyString =
+                request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+        String[] words = bodyString.split("\n");
+        for (String w : words) wordList.add(w.trim());
+
+        // 201 CREATED 응답 코드 발생시키기
+        response.setStatus(201);
+        // 생성된 리소스를 확인할 수 있는 URL 알려주기 (Location 헤더 굳이 안 붙여도 기능적으로 차이는 없음)
+        response.setHeader("Location", "/words");
+    }
+
+    // 저장된 모든 단어 보여주기
+    @GetMapping("/words")
+    public void showWords(HttpServletResponse response) throws IOException {
+        String allWords = String.join(",", wordList);
+        response.setStatus(200);
+        response.getWriter().write(allWords);
     }
 
 }
