@@ -1,6 +1,8 @@
 package study.mvc;
 
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,6 +14,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/renew")
@@ -118,5 +122,21 @@ public class MyRenewController {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=" + filename);
         return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+    }
+
+    // Post요청 Spring식으로 코드 변환
+    private ArrayList<String> wordList = new ArrayList<>();
+    // 위의 ArrayList에 단어를 추가하는 메서드
+    @PostMapping("/words")
+    // post로 하면 201을 지정해주는 것이 좋기 때문이다.
+    @ResponseStatus(HttpStatus.CREATED)
+    // @RequestBody : body에 있는 내용을 가져옴
+    public void addWord(@RequestBody String bodyString) {
+          String[] words = bodyString.split("\n");
+          for(String w : words) wordList.add(w.trim());
+    }
+    @GetMapping("/words")
+    public String showWords() {
+        return String.join(",", wordList);
     }
 }
