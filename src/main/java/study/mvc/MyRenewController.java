@@ -129,14 +129,19 @@ public class MyRenewController {
     // 위의 ArrayList에 단어를 추가하는 메서드
     @PostMapping("/words")
     // post로 하면 201을 지정해주는 것이 좋기 때문이다.
+    // @ResponseStatus : 응답 메서드의 상태 코드를 받음
     @ResponseStatus(HttpStatus.CREATED)
     // @RequestBody : body에 있는 내용을 가져옴
+    // body 영역의 내용이 String 타입임
     public void addWord(@RequestBody String bodyString) {
           String[] words = bodyString.split("\n");
+//        trim() : 앞 뒤 공백 문자 제거
           for(String w : words) wordList.add(w.trim());
     }
+    
+    // 메서드를 받는 것
     @GetMapping("/words")
     public String showWords() {
-        return String.join(",", wordList);
+        return String.join(", ", wordList);
     }
 }
