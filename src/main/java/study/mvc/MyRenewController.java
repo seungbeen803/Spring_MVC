@@ -1,12 +1,17 @@
 package study.mvc;
 
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 @RestController
 @RequestMapping("/renew")
@@ -90,4 +95,28 @@ public class MyRenewController {
         return result;
     }
 
+    // "/dog-image"
+    @GetMapping(value = "/dog-image", produces = MediaType.IMAGE_JPEG_VALUE)
+    public byte[] dogImage() throws IOException {
+    // resources 폴더의 static 폴더에 이미지 있어야 함
+        File file = ResourceUtils.getFile("classpath:static/dog.jpg");
+    // 파일의 바이트 데이터 모두 읽어오기
+        byte[] bytes = Files.readAllBytes(file.toPath());
+        return bytes;
+    }
+
+    @GetMapping(value = "/dog-image-file", produces =
+            MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    // 헤더를 직접 조정하고 싶은 경우 ResponseEntity 타입을 반환하도록 설정 가능
+    // (꺽쇠 안에는 응답 메시지의 바디 데이터에 포함될 타입을 지정)
+    public ResponseEntity<byte[]> dogImageFile() throws IOException {
+        File file = ResourceUtils.getFile("classpath:static/dog.jpg");
+        byte[] bytes = Files.readAllBytes(file.toPath());
+        String filename = "dog.jpg";
+
+        // 헤더 값 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=" + filename);
+        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+    }
 }
