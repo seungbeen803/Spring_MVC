@@ -17,6 +17,73 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+ // 커맨드 객체로 사용될 클래스 정의
+ class MyCommandObject {
+     // 필드 네임 그대로 전달해야하므로 필드 네임이 중요하다
+     private String value1;
+     private Integer value2;
+     // 반드시 세터 메서드가 있어야 함
+     // 세터로 값을 넣기 때문에 무조건 세터 메서드가 존재해야함
+     public void setValue1(String value1) { this.value1 = value1; }
+     public void setValue2(Integer value2) { this.value2 = value2; }
+
+     @Override
+     public String toString() {
+         return "MyCommandObject{" +
+                 "value1='" + value1 + '\'' +
+                 ", value2=" + value2 +
+                 '}';
+     }
+ }
+
+ // Json 직렬화, 역직렬화에 사용될 클래스 정의
+class MyJsonData {
+    private String value1;
+    private Integer value2;
+    // 직렬화
+    public String getValue1() { return value1; }
+    public Integer getValue2() { return value2; }
+     // 역직렬화
+    public void setValue1(String value1) { this.value1 = value1; }
+    public void setValue2(Integer value2) { this.value2 = value2; }
+
+     @Override
+     public String toString() {
+         return "MyJsonData{" +
+                 "value1='" + value1 + '\'' +
+                 ", value2=" + value2 +
+                 '}';
+     }
+ }
+
+ class Student {
+     private String id;
+     public String name;
+     public Integer age;
+
+     public String getId() { return id; }
+
+     public String getName() { return name; }
+
+     public Integer getAge() { return age; }
+
+     public void setId(String id) { this.id = id; }
+
+     public void setName(String name) { this.name = name; }
+
+     public void setAge(Integer age) { this.age = age; }
+
+     @Override
+     public String toString() {
+         return "Student{" +
+                 "id='" + id + '\'' +
+                 ", name='" + name + '\'' +
+                 ", age=" + age +
+                 '}';
+     }
+ }
+
+
 @RestController
 @RequestMapping("/renew")
 public class MyRenewController {
@@ -144,4 +211,40 @@ public class MyRenewController {
     public String showWords() {
         return String.join(", ", wordList);
     }
+
+    // 컨트롤러 메서드 정의
+    @PostMapping("/test")
+    // @ModelAttribute를 타입 앞에 붙여주고 메서드의 파라미터 값으로 전달되게 함
+    // @ModelAttribute 붙이지 않아도 되지만 붙이는 것이 좋음!
+    public String commandObjectTest(@ModelAttribute MyCommandObject myCommandObject)
+    {
+        return myCommandObject.toString();
+    }
+
+    // 요청 메시지의 Content-Type이 "applicaion/json"인 요청을 받아들이기 위해서 consumes를 MediaType.APPLICATION_JSON_VALUE로 설정
+    // 응답 메시지의 Content-Type이 "applicaion/json"이므로 produces를
+    // MediaType.APPLICATION_JSON_VALUE로 설정
+    @PostMapping(value = "/json-test",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    // 반환 타입으로 MyJsonData를 설정하였고 ResponseBody 어노테이션을 통해 해당 값이 메시지 컨버터를 통해서 직렬화되어야 함을 알림
+    @ResponseBody
+    // RequestBody 어노테이션을 통해 요청 메시지의 바디에 포함된 JSON 문자열이 메시지 컨버터를 통해서 역직렬화되어 객체로 변환되어야 함을 알림
+
+    // consumes - @RequestBody(json -> 객체)
+    // produces - @ResponseBody(객체 -> json)
+    public MyJsonData jsonTest(@RequestBody MyJsonData myJsonData) {
+        System.out.println(myJsonData);
+        return myJsonData;
+    }
+
+    @PostMapping(value = "/student-test",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Student studentTest(@RequestBody Student s) {
+        System.out.println(s);
+        return s;
+    }
 }
+
