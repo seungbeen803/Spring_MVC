@@ -3,15 +3,14 @@ package study.mvc;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -246,5 +245,37 @@ public class MyRenewController {
         System.out.println(s);
         return s;
     }
+
+    // RestTemplate를 이용한 외부 API 통신
+
+    // 많은 HTTP 통신용 클라이언트(ex: OkHttp, Retrofit 등)가 존재하지만 스프링 내부적으로 제공하는
+    // RestTemplate을 사용해도 무방함
+    @GetMapping(value = "/github/{user}", produces =
+            MediaType.TEXT_PLAIN_VALUE)
+    public String githubUser(@PathVariable("user") String user) {
+        RestTemplate restTemplate = new RestTemplate();
+        // 요청 메시지 생성 및 설정
+        // HttpHeaders headers = new HttpHeaders();
+        // headers.setContentType(MediaType.APPLICATION_JSON);
+        RequestEntity<String> requestEntity = new RequestEntity<>(
+                null, null, HttpMethod.GET,
+                URI.create("https://api.github.com/users/" + user));
+        // 응답 메시지
+        ResponseEntity<String> response = restTemplate.exchange(requestEntity,
+                String.class);
+        String responseBody = response.getBody();
+        return responseBody;
+    }
+
+    @GetMapping(value = "/kanye-rest", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String Kanye() {
+        RestTemplate restTemplate = new RestTemplate();
+        RequestEntity<String> requestEntity = new RequestEntity<>(
+                null, null, HttpMethod.GET, URI.create("https://api.kanye.rest/"));
+        ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
+        String responseBody = response.getBody();
+        return responseBody;
+    }
+
 }
 
